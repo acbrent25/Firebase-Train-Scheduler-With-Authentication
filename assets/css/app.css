@@ -1,0 +1,25 @@
+.jumbotron {
+    background: url('../img/train-scheduler-bg.jpg');
+    background-size: cover;
+    color: #fff;
+    padding: 120px 0;
+}
+
+body {
+    font-family: 'Cabin', sans-serif;
+}
+
+h1,h2,h3 {
+    font-family: 'Raleway', sans-serif;
+    text-transform: uppercase;
+}
+
+
+@media (max-width: 992px) { 
+
+    #add-train {
+        margin-top: 30px;
+    }
+    
+}
+
