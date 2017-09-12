@@ -1,4 +1,6 @@
+
 $(document).ready(function() {
+
 
   // Initialize Firebase
     var config = {
@@ -13,6 +15,7 @@ $(document).ready(function() {
     firebase.initializeApp(config);
 
     var database = firebase.database();
+    var ref = firebase.database().ref;
 
     // User enters name
         var trainName = "";
@@ -24,46 +27,58 @@ $(document).ready(function() {
         var trainFrequency = 0;
         var minAway = 0;
         var key;
-        var nextTrainCoverted = 0;
-        var tMinutesTillTrain = 0;
- 
+        var firstTimeConverted;
+        var currentTime;
+        var diffTime;
+        var tRemainder;
+        var tMinutesTillTrain;
+        var nextTrain;
+        var nextTrainCoverted;
+
     // Capture Train Submit Button Click
     $('#submit').on('click', function(){
         event.preventDefault();
-
+        
         // store and retrieve the most recent train
         trainName = $('#train-name').val().trim().toProperCase();
         trainDestination = $('#train-destination').val().trim().toProperCase();
         trainTime = $('#train-time').val().trim();
         trainFrequency = $('#train-frequency').val().trim();
 
-        // First Time (pushed back 1 year to make sure it comes before current time)
-        var firstTimeConverted = moment(trainTime, "hh:mm").subtract(1, "years");
+        firstTimeConverted = moment(trainTime, "hh:mm").subtract(1, "years");
         console.log("firstTimeConverted: " + firstTimeConverted);
-
+        $('#modal-submit').attr('firstTimeConverted', firstTimeConverted);
+   
         // Current Time
-        var currentTime = moment();
+        currentTime = moment();
         console.log("CURRENT TIME: " + moment(currentTime).format("hh:mm"));
+        $('#modal-submit').attr('data-currentTime', currentTime);
 
-        // Difference between the times
-        var diffTime = moment().diff(moment(firstTimeConverted), "minutes");
+   
+        // Difference between current time and first time entered
+        diffTime = moment().diff(moment(firstTimeConverted), "minutes");
         console.log("DIFFERENCE IN TIME: " + diffTime);
-
+        $('#modal-submit').attr('data-diffTime', diffTime);
+   
         // Time apart (remainder)
-        var tRemainder = diffTime % trainFrequency;
+        tRemainder = diffTime % trainFrequency;
         console.log("Remainder: " + tRemainder);
-
+        $('#modal-submit').attr('data-tRemainder', tRemainder);
+   
         // Minute Until Train
-        var tMinutesTillTrain = trainFrequency - tRemainder;
+        tMinutesTillTrain = trainFrequency - tRemainder;
         console.log("MINUTES TILL TRAIN: " + tMinutesTillTrain);
-
+        $('#modal-submit').attr('data-tMinutesTillTrain', tMinutesTillTrain);
+   
         // Next Train
-        var nextTrain = moment().add(tMinutesTillTrain, "minutes");
+        nextTrain = moment().add(tMinutesTillTrain, "minutes");
         console.log("ARRIVAL TIME: " + moment(nextTrain).format("hh:mm"));
-
-        var nextTrainCoverted = moment(nextTrain).format("hh:mm");
+        $('#modal-submit').attr('data-nextTrain', tMinutesTillTrain);
+   
+        nextTrainCoverted = moment(nextTrain).format("hh:mm");
         console.log('next train converted: ' + nextTrainCoverted);
-
+        $('#modal-submit').attr('data-nextTrainCoverted', nextTrainCoverted);
+        
         database.ref().push({
             trainName: trainName,
             trainDestination: trainDestination,
@@ -86,25 +101,40 @@ $(document).ready(function() {
             console.log(key);
             // childData will be the actual contents of the child
             var childData = childSnapshot.val();
-            console.log(childData);
+            console.log("childData: " + childData);
 
             console.log("train dest: " + childData.trainDestination);
             console.log("train name: " + childData.trainName);
             console.log("train time: " + childData.trainTime);
             console.log("train Frequency: " + childData.trainFrequency);
             console.log("nextTrainCoverted: " + childData.nextTrainCoverted);
-
+            
+            // Train Data to Put on Page
             var newTrain = $('<tr>');
             var childName = $("<td>").text(childData.trainName);
             var childDestination = $("<td>").text(childData.trainDestination);
             var childFrequency = $("<td>").text(childData.trainFrequency + " min");
             var childTime = $("<td>").text(childData.nextTrainCoverted);
             var minAway = $("<td>").text(childData.tMinutesTillTrain);
+            
+            // Edit Button Plus Attributes
+            var edit = $("<td>").html('<i class="fa fa-pencil-square" aria-hidden="true"></i>');
+            edit.addClass('edit-btn');
+            edit.attr('data-train-name', childData.trainName);
+            edit.attr('data-train-destination', childData.trainDestination);
+            edit.attr('data-train-frequency', childData.trainFrequency);
+            edit.attr('data-train-next', childData.nextTrainCoverted);
+            edit.attr('data-train-minsAway', childData.tMinutesTillTrain);
+            edit.attr('edit-data-train', key);
+            edit.attr('data-toggle', "modal");
+            edit.attr('data-target', "#editModal");
+                             
+            // Close Button Plus Attributes
             var close = $("<td>").html('<i class="fa fa-window-close" aria-hidden="true"></i>');
             close.addClass('close-btn');
             close.attr('data-train', key);
             
-            newTrain.append(childName).append(childDestination).append(childFrequency).append(childTime).append(minAway).append(close);
+            newTrain.append(childName).append(childDestination).append(childFrequency).append(childTime).append(minAway).append(edit).append(close);
 
             $('#train-schedule-area').append(newTrain);
 
@@ -118,11 +148,63 @@ $(document).ready(function() {
 
         // click the x button and delete the train
         $('body').on('click', '.close-btn', function(){
-            var dataTrain = $(this).attr('data-train');
-            console.log("dataTrain: " + dataTrain);
+            var dataTrain = $(this).attr('edit-data-train', key);
             database.ref(dataTrain).remove();
             $(this).remove();
             printToPage();
+    });
+
+        // click the edit button 
+        $('body').on('click','.edit-btn', function(){
+            var editDataTrain = $(this).attr('edit-data-train');
+            var editTrainDestination = $(this).attr('data-train-destination');
+            var editTrainFrequency = $(this).attr('data-train-frequency');
+            // var dataTrainKey = $('.edit-btn').attr();
+            console.log("editdataTrainKey: " + editDataTrain);
+            console.log("data-train-destination: " + editTrainDestination);
+            console.log("data-train-frequency: " + editTrainFrequency);
+
+            $('#modal-submit').attr('data-train-key', editDataTrain);
+            $('#modal-submit').attr('data-train-destination', editTrainDestination);
+            $('#modal-submit').attr('data-train-frequency', editTrainFrequency);
+            
+            // $('#edit').attr('edit-data-train', key);
+            
+        });
+
+
+
+        // Submitting the modal 
+        $('#modal-submit').on('click', function(){
+            event.preventDefault();
+
+            trainName = $('#edit-train-name').val().trim().toProperCase();
+            trainDestination = $('#edit-train-destination').val().trim().toProperCase();
+            trainTime = $('#edit-train-time').val().trim();
+            trainFrequency = $('#edit-train-frequency').val().trim();
+
+            console.log("edited train name: " + trainName);
+            console.log("edited train destination: " + trainDestination);
+            console.log("edited train time: " + trainTime);
+            console.log("edited train frequency: " + trainFrequency);
+
+            $('#editModal').modal('hide');
+
+            var editDataTrain = $(this).attr('data-train-key');
+            console.log("editDataTrain: " + editDataTrain);
+
+            var editTrainDestination = $(this).attr('data-train-destination');
+            var editTrainFrequency = $(this).attr('data-train-frequency');
+            
+            firebase.database().ref().child(editDataTrain)
+            .update({ 
+                trainName: trainName,
+                trainDestination: trainDestination,
+                trainFrequency: trainFrequency
+             });
+            
+            printToPage();
+
         });
 
         // convert string to captialize first letters

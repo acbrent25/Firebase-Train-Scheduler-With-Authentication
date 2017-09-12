@@ -112,6 +112,51 @@
             </div><!--/ row -->
         </div><!--/ contianer -->
     </section>
+
+    <section id="modal">
+        <div class="modal" id="editModal">
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title">Edit Your Train</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                
+                <div class="modal-body">
+                    <form>
+                        <div class="form-group">
+                            <label class="form-control-label" data-train-key="" for="edit-train-name">Train Name</label>
+                            <input type="text" class="form-control" id="edit-train-name" placeholder="" data-train-name="">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-control-label" for="edit-train-destination">Destination</label>
+                            <input type="text" class="form-control" id="edit-train-destination" placeholder="" data-train-destination="">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-control-label" for="edit-train-time">First Train Time</label>
+                            <input type="text" class="form-control" id="edit-train-time" placeholder="" value="">
+                            <small id="time-help-block" class="form-text text-muted">
+                                Must be in Military Time
+                            </small>
+                            
+                        </div>
+                        <div class="form-group">
+                            <label class="form-control-label" for="edit-train-frequency">Frequency in Minutes</label>
+                            <input type="text" class="form-control" id="edit-train-frequency" placeholder="" data-train-frequency="">
+                            <small id="frequency-help-block" class="form-text text-muted">
+                                How often does it run?
+                            </small>
+                        </div>
+                        <button type="submit" id="modal-submit" class="btn btn-danger">Submit</button>
+                        </form>
+                </div>
+              
+              </div>
+            </div>
+          </div>
+    </section>
     
 
 <!-- Firebase -->
