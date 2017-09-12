@@ -1,6 +1,14 @@
 
 $(document).ready(function() {
 
+    
+        $('input.timepicker').timepicker({
+            timeFormat: 'H:mm',
+            interval: 5,
+            
+        });
+   
+
 
   // Initialize Firebase
     var config = {
@@ -45,44 +53,21 @@ $(document).ready(function() {
         trainTime = $('#train-time').val().trim();
         trainFrequency = $('#train-frequency').val().trim();
 
-        firstTimeConverted = moment(trainTime, "hh:mm").subtract(1, "years");
-        console.log("firstTimeConverted: " + firstTimeConverted);
-        
-        // Current Time
-        currentTime = moment();
-        console.log("CURRENT TIME: " + moment(currentTime).format("hh:mm"));
-        
-        // Difference between current time and first time entered
-        diffTime = moment().diff(moment(firstTimeConverted), "minutes");
-        console.log("DIFFERENCE IN TIME: " + diffTime);
-   
-        // Time apart (remainder)
-        tRemainder = diffTime % trainFrequency;
-        console.log("Remainder: " + tRemainder);
-   
-        // Minute Until Train
-        tMinutesTillTrain = trainFrequency - tRemainder;
-        console.log("MINUTES TILL TRAIN: " + tMinutesTillTrain);
-   
-        // Next Train
-        nextTrain = moment().add(tMinutesTillTrain, "minutes");
-        console.log("ARRIVAL TIME: " + moment(nextTrain).format("hh:mm"));
-   
-        nextTrainCoverted = moment(nextTrain).format("hh:mm");
-        console.log('next train converted: ' + nextTrainCoverted);
+        updatTime();
         
         database.ref().push({
-            trainName: trainName,
-            trainDestination: trainDestination,
-            trainTime: trainTime,
-            trainFrequency: trainFrequency,
-            nextTrainCoverted: nextTrainCoverted,
-            tMinutesTillTrain: tMinutesTillTrain,
-            dateAdded: firebase.database.ServerValue.TIMESTAMP
+        trainName: trainName,
+        trainDestination: trainDestination,
+        trainTime: trainTime,
+        trainFrequency: trainFrequency,
+        nextTrainCoverted: nextTrainCoverted,
+        tMinutesTillTrain: tMinutesTillTrain,
+        dateAdded: firebase.database.ServerValue.TIMESTAMP
         }); // database set
 
     }); // submit on click
 
+    // UPDATE TIME FUNCTION
 
     function printToPage() {
         $('#train-schedule-area').empty();
@@ -93,14 +78,7 @@ $(document).ready(function() {
             console.log(key);
             // childData will be the actual contents of the child
             var childData = childSnapshot.val();
-            console.log("childData: " + childData);
-
-            console.log("train dest: " + childData.trainDestination);
-            console.log("train name: " + childData.trainName);
-            console.log("train time: " + childData.trainTime);
-            console.log("train Frequency: " + childData.trainFrequency);
-            console.log("nextTrainCoverted: " + childData.nextTrainCoverted);
-            
+          
             // Train Data to Put on Page
             var newTrain = $('<tr>');
             var childName = $("<td>").text(childData.trainName);
@@ -108,6 +86,7 @@ $(document).ready(function() {
             var childFrequency = $("<td>").text(childData.trainFrequency + " min");
             var childTime = $("<td>").text(childData.nextTrainCoverted);
             var minAway = $("<td>").text(childData.tMinutesTillTrain);
+            $('td.edit-btn').attr('id', 'mins-away');
             
             // Edit Button Plus Attributes
             var edit = $("<td>").html('<i class="fa fa-pencil-square" aria-hidden="true"></i>');
@@ -131,13 +110,16 @@ $(document).ready(function() {
 
             $('#train-schedule-area').append(newTrain);
 
-        // Handle the errors
-        }, function(errorObject) {
-        console.log("Errors handled: " + errorObject.code);
-        });
+            // Handle the errors
+            }, function(errorObject) {
+            console.log("Errors handled: " + errorObject.code);
+            });         
 
     }// print to page
+
     printToPage();
+
+    
 
         // click the x button and delete the train
         $('body').on('click', '.close-btn', function(){
@@ -145,7 +127,7 @@ $(document).ready(function() {
             database.ref(dataTrain).remove();
             $(this).remove();
             printToPage();
-    });
+        });
 
         // click the edit button 
         $('body').on('click','.edit-btn', function(){
@@ -157,12 +139,12 @@ $(document).ready(function() {
             $('#modal-submit').attr('data-train-key', editDataTrain);
             $('#modal-submit').attr('data-train-destination', editTrainDestination);
             $('#modal-submit').attr('data-train-frequency', editTrainFrequency);
-            $('#modal-submit').attr('data-train-time', editTrainTime); 
+            $('#modal-submit').attr('data-train-time', editTrainTime);
         });
 
 
 
-        // Submitting the modal 
+        // SUBMITTING THE MODAL
         $('#modal-submit').on('click', function(){
             event.preventDefault();
 
@@ -177,20 +159,13 @@ $(document).ready(function() {
             var editTrainDestination = $(this).attr('data-train-destination');
             var editTrainFrequency = $(this).attr('data-train-frequency');
 
-            // For Updating Time
-            firstTimeConverted = moment(trainTime, "hh:mm").subtract(1, "years");
-            currentTime = moment();
-            diffTime = moment().diff(moment(firstTimeConverted), "minutes");
-            tRemainder = diffTime % trainFrequency;
-            tMinutesTillTrain = trainFrequency - tRemainder;
-            nextTrain = moment().add(tMinutesTillTrain, "minutes");
-            nextTrainCoverted = moment(nextTrain).format("hh:mm");
-            
-            
-            
+            updatTime();
+
+                      
             firebase.database().ref().child(editDataTrain)
             .update({ 
                 trainName: trainName,
+                trainTime: trainTime,
                 trainDestination: trainDestination,
                 trainFrequency: trainFrequency,
                 nextTrainCoverted: nextTrainCoverted,
@@ -201,9 +176,24 @@ $(document).ready(function() {
 
         });
 
+        function updatTime() {
+            // For Updating Time
+            firstTimeConverted = moment(trainTime, "hh:mm").subtract(1, "years");
+            currentTime = moment();
+            diffTime = moment().diff(moment(firstTimeConverted), "minutes");
+            tRemainder = diffTime % trainFrequency;
+            tMinutesTillTrain = trainFrequency - tRemainder;
+            nextTrain = moment().add(tMinutesTillTrain, "minutes");
+            nextTrainCoverted = moment(nextTrain).format("hh:mm");
+
+        }
+
         // convert string to captialize first letters
         String.prototype.toProperCase = function () {
             return this.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
         };
 
 }); // document ready 
+
+
+
