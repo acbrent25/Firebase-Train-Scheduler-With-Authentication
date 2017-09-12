@@ -47,37 +47,29 @@ $(document).ready(function() {
 
         firstTimeConverted = moment(trainTime, "hh:mm").subtract(1, "years");
         console.log("firstTimeConverted: " + firstTimeConverted);
-        $('#modal-submit').attr('firstTimeConverted', firstTimeConverted);
-   
+        
         // Current Time
         currentTime = moment();
         console.log("CURRENT TIME: " + moment(currentTime).format("hh:mm"));
-        $('#modal-submit').attr('data-currentTime', currentTime);
-
-   
+        
         // Difference between current time and first time entered
         diffTime = moment().diff(moment(firstTimeConverted), "minutes");
         console.log("DIFFERENCE IN TIME: " + diffTime);
-        $('#modal-submit').attr('data-diffTime', diffTime);
    
         // Time apart (remainder)
         tRemainder = diffTime % trainFrequency;
         console.log("Remainder: " + tRemainder);
-        $('#modal-submit').attr('data-tRemainder', tRemainder);
    
         // Minute Until Train
         tMinutesTillTrain = trainFrequency - tRemainder;
         console.log("MINUTES TILL TRAIN: " + tMinutesTillTrain);
-        $('#modal-submit').attr('data-tMinutesTillTrain', tMinutesTillTrain);
    
         // Next Train
         nextTrain = moment().add(tMinutesTillTrain, "minutes");
         console.log("ARRIVAL TIME: " + moment(nextTrain).format("hh:mm"));
-        $('#modal-submit').attr('data-nextTrain', tMinutesTillTrain);
    
         nextTrainCoverted = moment(nextTrain).format("hh:mm");
         console.log('next train converted: ' + nextTrainCoverted);
-        $('#modal-submit').attr('data-nextTrainCoverted', nextTrainCoverted);
         
         database.ref().push({
             trainName: trainName,
@@ -121,6 +113,7 @@ $(document).ready(function() {
             var edit = $("<td>").html('<i class="fa fa-pencil-square" aria-hidden="true"></i>');
             edit.addClass('edit-btn');
             edit.attr('data-train-name', childData.trainName);
+            edit.attr('data-train-time', childData.trainTime);
             edit.attr('data-train-destination', childData.trainDestination);
             edit.attr('data-train-frequency', childData.trainFrequency);
             edit.attr('data-train-next', childData.nextTrainCoverted);
@@ -159,17 +152,12 @@ $(document).ready(function() {
             var editDataTrain = $(this).attr('edit-data-train');
             var editTrainDestination = $(this).attr('data-train-destination');
             var editTrainFrequency = $(this).attr('data-train-frequency');
-            // var dataTrainKey = $('.edit-btn').attr();
-            console.log("editdataTrainKey: " + editDataTrain);
-            console.log("data-train-destination: " + editTrainDestination);
-            console.log("data-train-frequency: " + editTrainFrequency);
+            var editTrainTime = $(this).attr('data-train-time');
 
             $('#modal-submit').attr('data-train-key', editDataTrain);
             $('#modal-submit').attr('data-train-destination', editTrainDestination);
             $('#modal-submit').attr('data-train-frequency', editTrainFrequency);
-            
-            // $('#edit').attr('edit-data-train', key);
-            
+            $('#modal-submit').attr('data-train-time', editTrainTime); 
         });
 
 
@@ -183,24 +171,30 @@ $(document).ready(function() {
             trainTime = $('#edit-train-time').val().trim();
             trainFrequency = $('#edit-train-frequency').val().trim();
 
-            console.log("edited train name: " + trainName);
-            console.log("edited train destination: " + trainDestination);
-            console.log("edited train time: " + trainTime);
-            console.log("edited train frequency: " + trainFrequency);
-
             $('#editModal').modal('hide');
 
             var editDataTrain = $(this).attr('data-train-key');
-            console.log("editDataTrain: " + editDataTrain);
-
             var editTrainDestination = $(this).attr('data-train-destination');
             var editTrainFrequency = $(this).attr('data-train-frequency');
+
+            // For Updating Time
+            firstTimeConverted = moment(trainTime, "hh:mm").subtract(1, "years");
+            currentTime = moment();
+            diffTime = moment().diff(moment(firstTimeConverted), "minutes");
+            tRemainder = diffTime % trainFrequency;
+            tMinutesTillTrain = trainFrequency - tRemainder;
+            nextTrain = moment().add(tMinutesTillTrain, "minutes");
+            nextTrainCoverted = moment(nextTrain).format("hh:mm");
+            
+            
             
             firebase.database().ref().child(editDataTrain)
             .update({ 
                 trainName: trainName,
                 trainDestination: trainDestination,
-                trainFrequency: trainFrequency
+                trainFrequency: trainFrequency,
+                nextTrainCoverted: nextTrainCoverted,
+                tMinutesTillTrain: tMinutesTillTrain,
              });
             
             printToPage();
