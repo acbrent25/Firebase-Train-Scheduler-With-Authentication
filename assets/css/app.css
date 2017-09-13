@@ -5,8 +5,13 @@
     padding: 120px 0;
 }
 
+.fa {
+  color: #4abdac;
+}
+
 body {
     font-family: 'Cabin', sans-serif;
+    background: #dfdce3;
 }
 
 h1,h2,h3 {
@@ -29,4 +34,35 @@ h1,h2,h3 {
     box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.25);
 }
 
+.card, .form-control {
+    border-radius: 0;
+}
+
+/*  #f78733 */
+
+.card-header {
+    background: #fc4a1a;
+    color: #fff;
+    text-transform: uppercase;
+    font-family: 'Raleway', sans-serif;
+}
+
+.card-header:first-child {
+    border-radius: 0;
+}
+
+.btn-danger {
+    color: #fff;
+    background-color: #fc4a1a;
+    border-color: #fc4a1a;
+}
+
+.btn-danger:hover {
+    background-color: #FF6C45;
+    border-color: #FF6C45;
+}
+
+#train-schedule {
+    margin-bottom: 40px;
+}
 
