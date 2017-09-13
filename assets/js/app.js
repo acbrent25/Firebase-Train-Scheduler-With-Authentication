@@ -57,6 +57,12 @@ $(document).ready(function() {
            tMinutesTillTrain: tMinutesTillTrain,
            dateAdded: firebase.database.ServerValue.TIMESTAMP
            }); // database set
+
+           // Clear Form
+           $('#train-name').val('');
+           $('#train-destination').val('');
+           $('#train-time').val('');
+           $('#train-frequency').val('');  
     
        }); // submit on click
     
@@ -64,6 +70,8 @@ $(document).ready(function() {
     
        function printToPage() {
            $('#train-schedule-area').empty();
+
+           
             
            database.ref().on("child_added", function(childSnapshot) {
                // 
@@ -122,14 +130,19 @@ $(document).ready(function() {
     
        // click the edit button 
        $('body').on('click','.edit-btn', function(){
+           var editTrainName = $(this).attr('data-train-name')
            var editDataTrain = $(this).attr('edit-data-train');
            var editTrainDestination = $(this).attr('data-train-destination');
            var editTrainFrequency = $(this).attr('data-train-frequency');
            var editTrainTime = $(this).attr('data-train-time');
     
            $('#modal-submit').attr('data-train-key', editDataTrain);
+           $('#edit-train-name').attr('placeholder', editTrainName);
            $('#modal-submit').attr('data-train-destination', editTrainDestination);
+           $('#edit-train-destination').attr('placeholder', editTrainDestination);
            $('#modal-submit').attr('data-train-frequency', editTrainFrequency);
+           $('#edit-train-frequency').attr('placeholder', editTrainFrequency);
+           $('#edit-train-time').attr('placeholder', editTrainTime);
            $('#modal-submit').attr('data-train-time', editTrainTime);
        });
     
@@ -151,6 +164,11 @@ $(document).ready(function() {
            var editTrainFrequency = $(this).attr('data-train-frequency');
     
            updatTime();
+
+           $('#edit-train-name').val('');
+           $('#edit-train-destination').val('');
+           $('#edit-train-time').val('');
+           $('#edit-train-frequency').val('');
     
                         
            firebase.database().ref().child(editDataTrain)
@@ -160,10 +178,12 @@ $(document).ready(function() {
                trainDestination: trainDestination,
                trainFrequency: trainFrequency,
                nextTrainCoverted: nextTrainCoverted,
-               tMinutesTillTrain: tMinutesTillTrain,
+               tMinutesTillTrain: tMinutesTillTrain
+
                });
             
            printToPage();
+             
     
        });
     
