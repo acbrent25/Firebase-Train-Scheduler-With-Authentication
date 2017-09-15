@@ -66,7 +66,7 @@ $(document).ready(function() {
     
        }); // submit on click
     
-       // UPDATE TIME FUNCTION
+       printToPage();
     
        function printToPage() {
            $('#train-schedule-area').empty();
@@ -118,7 +118,23 @@ $(document).ready(function() {
     
        }// print to page
     
-       printToPage();
+       
+
+    // Update minutes away by triggering change in firebase children
+   
+        function updateTime() {
+            
+            database.ref().on("value", function(snapshot){
+            snapshot.forEach(function(childSnapshot){
+                fbTime = moment().format('X');
+                database.ref(childSnapshot.key).update({
+                currentTime: fbTime,
+                })
+            })    
+            })
+        };
+       
+      setInterval(updateTime, 5000);
     
        // click the x button and delete the train
        $('body').on('click', '.close-btn', function(){

@@ -45,6 +45,8 @@ h1,h2,h3 {
     color: #fff;
     text-transform: uppercase;
     font-family: 'Raleway', sans-serif;
+    -webkit-font-smoothing: antialiased;
+	text-rendering: optimizelegibility;
 }
 
 .card-header:first-child {
